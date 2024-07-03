@@ -10,7 +10,7 @@
   },
   "engines": {
     "pnpm": ">=8.15.0",
-    "node": ">=20.11.1"
+    "node": ">=20"
   },
   "keywords": [],
   "author": "",
