@@ -1,14 +1,18 @@
 import * as cheerio from 'cheerio';
 import express from 'express';
 import { fetchHtmlData } from "./utils/requesets.js";
-import { scrapeWebsite } from "./puppeteer.js";
+import { PuppeteerScraper } from "./puppeteer.js";
 
 const app = express();
 const port = 3000;
 app.get('/', async (req, res) => {
-    // res.send('hello');
-    const title = await scrapeWebsite();
-    res.send(title);
+    const scraper = new PuppeteerScraper();
+    await scraper.launchBrowser();
+    // const html = await scraper.getHtml('https://www.vodafone.com.au/');
+
+    const rootHtml = await fetchHtmlData('https://www.vodafone.com.au/');
+
+    res.send(rootHtml);
 });
 
 app.listen(port, () => {

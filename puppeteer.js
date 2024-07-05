@@ -1,33 +1,32 @@
 import puppeteer from 'puppeteer';
 
-export async function scrapeWebsite() {
-    // Launch the browser and open a new blank page
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+export class PuppeteerScraper {
+    constructor() {
+        this.browser = null;
+        this.page = null;
+    }
 
-    // Navigate the page to a URL
-    await page.goto('https://developer.chrome.com/');
+    async launchBrowser() {
+        this.browser = await puppeteer.launch();
+        console.log('Browser launched')
+        this.page = await this.browser.newPage();
+        console.log('New page created')
+    }
 
-    // Set screen size
-    await page.setViewport({width: 1080, height: 1024});
+    async getHtml(url) {
+        console.log('Navigating to:', url)
+        await this.page.goto(url, { waitUntil: 'networkidle0' });
+        console.log('Waiting for 2 seconds')
+        await this.page.evaluate(async() => {
+            await new Promise(function(resolve) { 
+                   setTimeout(resolve, 2000)
+            });
+        });
+        return await this.page.content();
+    }
 
-    // Type into search box
-    await page.type('.devsite-search-field', 'automate beyond recorder');
-
-    // Wait and click on first result
-    const searchResultSelector = '.devsite-result-item-link';
-    await page.waitForSelector(searchResultSelector);
-    await page.click(searchResultSelector);
-
-    // Locate the full title with a unique string
-    const textSelector = await page.waitForSelector(
-        'text/Customize and automate'
-    );
-    const fullTitle = await textSelector?.evaluate(el => el.textContent);
-
-    // Print the full title
-
-    await browser.close();
-
-    return `The title of this blog post is "${fullTitle}".`;
+    async closeBrowser() {
+        await this.browser.close();
+    }
 }
+

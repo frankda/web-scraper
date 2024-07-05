@@ -5,8 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "build": "sh ./scripts/render-build.sh"
+    "dev": "nodemon index.js",
+    "start": "google-chrome-stable --headless && node index.js",
+    "build": "sh ./scripts/render-build.sh",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "engines": {
     "pnpm": ">=8.15.0",
@@ -15,9 +17,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "jest": {
+    "transform": {}
+  },
   "dependencies": {
     "cheerio": "1.0.0-rc.12",
     "express": "^4.19.2",
     "puppeteer": "^22.12.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4"
   }
 }
