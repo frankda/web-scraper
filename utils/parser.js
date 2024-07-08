@@ -1,3 +1,16 @@
+// TODO: Unit test for isSameOrigin function
+export function isSameOrigin({ url, origin, protocol}) {
+    // skip relative url
+    if (url.startsWith('/')) {
+        return true;
+    }
+
+    return url.includes(new URL(origin).hostname);
+}
+
+function formatUrl(url, origin) {
+    return url.endsWith('/') ? url.slice(0, -1) : url;
+}
 
 /**
  * Extracts links from a document based on a given domain.
@@ -19,13 +32,13 @@ export function extractLinks({ document, domain }) {
     }
     const escapedDomain = domain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const urlRegex = new RegExp(`((?<=href=")[(^\/)]?.*(?=["&]))|${escapedDomain}[a-zA-Z0-9\/-]*(?=[&'"])`, 'g');
-    const links = new Set();
+    const links = new Set([formatUrl(domain)]);
     let match;
 
     console.log('Starting link extraction...');
 
     while ((match = urlRegex.exec(document)) !== null) {
-        links.add(match[0]);
+        links.add(formatUrl(match[0]));
     }
 
     links.forEach(link => {
@@ -33,6 +46,7 @@ export function extractLinks({ document, domain }) {
             link.includes('.svg') || 
             link.includes('.css') || 
             link.includes('.js') || 
+            link.includes('.md') || 
             link.includes('.ico') || 
             link.includes('.jpg') || 
             link.includes('.webp') ||
@@ -43,7 +57,8 @@ export function extractLinks({ document, domain }) {
             link.includes('mailto:') ||
             link.includes('data:image') ||
             link.includes('javascript:') ||
-            link.includes('\"')   // filter out "https://www.vodafone.com.au/contact/samsung-news\" target=\"_self",
+            link.includes('\"') ||   // filter out "https://www.vodafone.com.au/contact/samsung-news\" target=\"_self",
+            !isSameOrigin({ url: link, origin: domain, protocol })
         ) {
             console.log('Remove invalid link: %s \n', link);
             links.delete(link);

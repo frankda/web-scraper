@@ -42,4 +42,10 @@ describe('extractLinks', () => {
     //     const expected = new Set();
     //     expect(extractLinks(document)).toEqual(expected);
     // });
+
+    /**
+     * TDOO: Test cases
+     * - should strip off search params
+     * - should strip off hash
+     */
 });
