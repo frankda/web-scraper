@@ -2,21 +2,24 @@ import * as cheerio from 'cheerio';
 import express from 'express';
 import { fetchHtmlData } from "./utils/requesets.js";
 import { PuppeteerScraper } from "./puppeteer.js";
+import { extractLinks } from "./utils/parser.js";
 
 const app = express();
 const port = 3000;
 app.get('/', async (req, res) => {
-    const scraper = new PuppeteerScraper();
-    await scraper.launchBrowser();
+    // const scraper = new PuppeteerScraper();
+    // await scraper.launchBrowser();
     // const html = await scraper.getHtml('https://www.vodafone.com.au/');
 
     const rootHtml = await fetchHtmlData('https://www.vodafone.com.au/');
 
-    res.send(rootHtml);
+    
+    const links = extractLinks({ document: rootHtml, domain: 'https://www.vodafone.com.au' });
+    res.json({ links: Array.from(links) });
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port http://localhost:${port}`)
   })
 
 async function main() {

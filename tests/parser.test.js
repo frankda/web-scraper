@@ -1,7 +1,7 @@
 // Assuming the necessary imports are already in place
 
 // Import the function to test
-import { extractLinks } from '/Users/frank.da/personal/web-scraper/utils/parser.js';
+import { extractLinks } from '../utils/parser.js';
 
 const mockHtml = `#34;src&#34;: &#34;https://www.vodafone.com.au/images/icons/bundles-red.svg&#34;,
     34;: &#34;https://www.vodafone.com.au/mobile/bundle-and-save&#34;,
@@ -16,28 +16,28 @@ describe('extractLinks', () => {
             'https://www.vodafone.com.au/support/home-internet/nbn-troubleshooting',
             'https://www.vodafone.com.au/contact/samsung-news'
         ]);
-        expect(extractLinks({ document: mockHtml, domain: 'www.vodafone.com.au'})).toEqual(expected);
+        expect(extractLinks({ document: mockHtml, domain: 'https://www.vodafone.com.au'})).toEqual(expected);
     });
 
     test('should handle duplicates by not adding them to the set', () => {
         const document = 'Visit "https://example.com", https://example.com" for more info.';
         const expected = new Set(['https://example.com']);
-        expect(extractLinks({document, domain: 'example.com'})).toEqual(expected);
+        expect(extractLinks({document, domain: 'https://example.com'})).toEqual(expected);
     });
 
     // test('should extract links from a complex string', () => {
-    //     const document = 'Text before https://example.com, text in between, https://another-example.com, and text after.';
+    //     const document = '#vodafone-content\" class=\"vodafone-skip-link';
     //     const expected = new Set(['https://example.com', 'https://another-example.com']);
-    //     expect(extractLinks(document)).toEqual(expected);
+    //     expect(extractLinks({document, domain: 'https://example.com'})).toEqual(expected);
     // });
 
-    // test('should return an empty set when no links are present', () => {
+    // test('different protocol', () => {
     //     const document = 'No links here!';
     //     const expected = new Set();
     //     expect(extractLinks(document)).toEqual(expected);
     // });
 
-    // test('should return an empty set when input is not a string', () => {
+    // test('invalid url', () => {
     //     const document = null;
     //     const expected = new Set();
     //     expect(extractLinks(document)).toEqual(expected);
