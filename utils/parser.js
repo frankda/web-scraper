@@ -1,5 +1,5 @@
 // TODO: Unit test for isSameOrigin function
-export function isSameOrigin({ url, origin, protocol}) {
+export function isSameOrigin({ url, origin}) {
     // skip relative url
     if (url.startsWith('/')) {
         return true;
@@ -8,8 +8,23 @@ export function isSameOrigin({ url, origin, protocol}) {
     return url.includes(new URL(origin).hostname);
 }
 
-function formatUrl(url, origin) {
+export function formatUrl(url, origin) {
     return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+export function validateURL(origin) {
+    try {
+        const url = new URL(origin);
+
+        if (url.pathname !== '/') {
+            console.log('\nUpdate origin to root path like https://example.com, do not include pathName\n Your url is for analysis is: %s\n', origin);
+            throw new Error('Pathname included in URL');
+        }
+        
+        return url;
+    } catch(err) {
+        throw new Error('Invalid origin format, has to be a valid for URL(url), consist of schema + hostname: ' + origin);
+    }
 }
 
 /**
@@ -17,31 +32,23 @@ function formatUrl(url, origin) {
  * 
  * @param {Object} param0 - The parameters for link extraction.
  * @param {string} param0.document - The document to extract links from.
- * @param {string} param0.domain - The domain to filter links by protocol + hostname eg. 'https://example.com'
+ * @param {string} param0.origin - The domain to filter links by protocol + hostname eg. 'https://example.com'
  * @returns {Set<string>} - The set of extracted links.
  */
-export function extractLinks({ document, domain }) {
-    let protocol
-    let hostname
-    try {
-        const url =  new URL(domain)
-        protocol = url.protocol
-        hostname = url.hostname
-    } catch(err) {
-        throw('Invalid domain format, has to be a valid for URL(domain)', domain)
-    }
-    const escapedDomain = domain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const urlRegex = new RegExp(`((?<=href=")[(^\/)]?.*(?=["&]))|${escapedDomain}[a-zA-Z0-9\/-]*(?=[&'"])`, 'g');
-    const links = new Set([formatUrl(domain)]);
+export function extractLinks({ document, origin }) {
+    const validatedOrigin = validateURL(origin)
+
+    const escapedDomain = origin.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const urlRegex = new RegExp(`((?<=href=")[(^\/)]?.*(?=["&]))|${escapedDomain}[a-zA-Z0-9\.\/-]*(?=[&'"])`, 'g');
+    const links = new Set([formatUrl(origin)]);
+    
     let match;
-
-    console.log('Starting link extraction...');
-
     while ((match = urlRegex.exec(document)) !== null) {
         links.add(formatUrl(match[0]));
     }
 
     links.forEach(link => {
+        // remove invalid links
         if (
             link.includes('.svg') || 
             link.includes('.css') || 
@@ -58,9 +65,8 @@ export function extractLinks({ document, domain }) {
             link.includes('data:image') ||
             link.includes('javascript:') ||
             link.includes('\"') ||   // filter out "https://www.vodafone.com.au/contact/samsung-news\" target=\"_self",
-            !isSameOrigin({ url: link, origin: domain, protocol })
+            !isSameOrigin({ url: link, origin: validatedOrigin.origin })
         ) {
-            console.log('Remove invalid link: %s \n', link);
             links.delete(link);
             return
         } 
@@ -68,12 +74,9 @@ export function extractLinks({ document, domain }) {
         if (link.startsWith('/')) {
             console.log('Update relative link to absolute link:', link);
             links.delete(link);
-            links.add(`${protocol}//${hostname}` + link);
+            links.add(validatedOrigin.origin + link);
         }
-
     });
-
-    console.log('Link filtering completed.');
 
     return links;
 }

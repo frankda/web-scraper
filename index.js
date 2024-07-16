@@ -3,23 +3,33 @@ import express from 'express';
 import { fetchHtmlData } from "./utils/requesets.js";
 import { PuppeteerScraper } from "./puppeteer.js";
 import { extractLinks } from "./utils/parser.js";
+import { Scraper } from "./utils/scraper.js";
+import { saveStringToFile } from "./utils/file.js";
 
 const app = express();
 const port = 3000;
 
-const vodafone = 'https://www.vodafone.com.au/';
+// TODO: Handle website not start with protocol
+const vodafone = 'https://www.vodafone.com.au';
 const website = vodafone;
 
-// TODO: Handle website not start with protocol
 
 app.get('/', async (req, res) => {
+    // const scraper = new Scraper({ entryUrl: website });
+    // const links = await scraper.start();
 
     // TODO: Handle invalid website URL
     const rootHtml = await fetchHtmlData(website);
+    const $ = cheerio.load(rootHtml);
+    const fullHTML = $.html();
+    console.log(fullHTML)
 
-    
-    const links = extractLinks({ document: rootHtml, domain: website });
-    res.json({ links: Array.from(links) });
+    // saveStringToFile(rootHtml);
+
+    // const links = extractLinks({ document: rootHtml, origin: website });
+    // const fetchedLinks = new Set([website]);
+
+    // res.json({ links: [...links] });
 });
 
 app.listen(port, () => {
