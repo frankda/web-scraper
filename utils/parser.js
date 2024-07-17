@@ -41,23 +41,29 @@ export function extractLinks({ document, origin }) {
     const validatedOrigin = validateURL(origin)
 
     const escapedDomain = origin.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const urlRegex = new RegExp(`((?<=href=")[(^\/)]?.*(?=["&]))|${escapedDomain}[a-zA-Z0-9\.\/-]*(?=[&'"])`, 'g');
+    const urlRegex = new RegExp(`((?<=href=")[(^\/)]?.*?(?=["&]))|${escapedDomain}[a-zA-Z0-9\.\/-]*(?=[&'"])`, 'g');
     const links = new Set([formatUrl(origin)]);
     
-    let match;
-    while ((match = urlRegex.exec(document)) !== null) {
-        links.add(formatUrl(match[0]));
+    const matches = document.match(urlRegex);
+    if (matches) {
+        matches.forEach(match => {
+            links.add(formatUrl(match));
+        });
     }
-
     links.forEach(link => {
-        // remove invalid links
+        // TODO: use regex to filter out unwanted links
         if (
             link.includes('.svg') || 
             link.includes('.css') || 
             link.includes('.js') || 
             link.includes('.md') || 
             link.includes('.ico') || 
+            link.includes('.zip') || 
+            link.includes('.rar') || 
             link.includes('.jpg') || 
+            link.includes('.png') || 
+            link.includes('.pdf') || 
+            link.includes('.txt') || 
             link.includes('.webp') ||
             link.includes('.woff') ||
             link.includes('.ttf') ||
@@ -74,7 +80,6 @@ export function extractLinks({ document, origin }) {
         } 
 
         if (link.startsWith('/')) {
-            console.log('Update relative link to absolute link:', link);
             links.delete(link);
             links.add(validatedOrigin.origin + link);
         }

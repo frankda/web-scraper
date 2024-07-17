@@ -22,13 +22,14 @@ export class Scraper {
         }
         this.fetchedUrl.add(url);
 
-        const html = await fetchHtmlData(url)
+        const html = await fetchHtmlData({ url })
         if (!html) {
             return;
         }
 
         if (!this.origin) {
             this.origin = new URL(url).origin;
+            console.log('Setting origin:', this.origin)
         }
 
         const fileName = new URL(url).pathname.replace(/\//g, '_');
@@ -38,6 +39,7 @@ export class Scraper {
         saveStringToFile(content, `/output/${fileName}.txt`);
         saveStringToFile(html, `/output/${fileName}.html`);
 
+        console.log('File saved successfully')
         return html;
     }
 
@@ -45,6 +47,10 @@ export class Scraper {
         const waitList = [];
 
         const entryHtml = await this.fetchAndSaveContent(this.entryUrl);
+        if (!entryHtml) {
+            throw new Error('Invalid entry url');
+        }
+
         const entryLinks = extractLinks({ document: entryHtml, origin: this.origin });
         this.siteLinks = this.siteLinks.union(entryLinks);
         waitList.push(...entryLinks);
@@ -52,7 +58,8 @@ export class Scraper {
         let i = 0;
 
         // TODO: Remove condition of i !== 3
-        while (waitList.length > 0 && i !== 10)  {
+        while (waitList.length > 0)  {
+            console.log('Remaining waitlist length:', waitList.length);
             i += 1;
             // TODO: Consider use pop() for better performance
             const url = waitList.shift();
@@ -70,12 +77,14 @@ export class Scraper {
                 this.failedUrl.add(url);
             }
 
+            console.log('Start extracting links from:', url);
             // No html for invalid url
             if (!html) {
                 continue;
             }
 
             const links = extractLinks({ document: html, origin: this.origin });
+            console.log('Link extracted successfully')
             const newLinks = links.difference(this.siteLinks);
             this.siteLinks = this.siteLinks.union(newLinks);
 
