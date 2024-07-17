@@ -1,3 +1,5 @@
+import TurndownService from 'turndown';
+
 // TODO: Unit test for isSameOrigin function
 export function isSameOrigin({ url, origin}) {
     // skip relative url
@@ -79,4 +81,21 @@ export function extractLinks({ document, origin }) {
     });
 
     return links;
+}
+
+export function extractContent(document) {
+    const turndownService = new TurndownService();
+    const cleanedDocument = removeNonContentTags(document);
+    const markdown = turndownService.turndown(cleanedDocument);
+
+    return markdown;
+}
+
+
+
+// replace all matched part with empty string
+export function removeNonContentTags(document) {
+    // match between <link>, <meta>, <script>, <style>
+    const nonContentTagEXp = new RegExp(`<[lms][ceit][nrty][aikl][ep]?[t]?.*?(?:<\/[lms][ceit][nrty][aikl][ep]?[t]?.*?>)`, 'gms');
+    return document.replace(nonContentTagEXp, '');
 }

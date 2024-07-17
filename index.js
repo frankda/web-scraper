@@ -15,21 +15,21 @@ const website = vodafone;
 
 
 app.get('/', async (req, res) => {
-    // const scraper = new Scraper({ entryUrl: website });
-    // const links = await scraper.start();
+    const scraper = new Scraper({ entryUrl: website });
+    const links = await scraper.start();
 
     // TODO: Handle invalid website URL
-    const rootHtml = await fetchHtmlData(website);
-    const $ = cheerio.load(rootHtml);
-    const fullHTML = $.html();
-    console.log(fullHTML)
+    // const rootHtml = await fetchHtmlData(website);
+    // const $ = cheerio.load(rootHtml);
+    // const fullHTML = $.html();
+    // console.log(fullHTML)
 
     // saveStringToFile(rootHtml);
 
     // const links = extractLinks({ document: rootHtml, origin: website });
     // const fetchedLinks = new Set([website]);
 
-    // res.json({ links: [...links] });
+    res.json({ links: [...links] });
 });
 
 app.listen(port, () => {

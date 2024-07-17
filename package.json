@@ -12,7 +12,7 @@
   },
   "engines": {
     "pnpm": ">=8.15.0",
-    "node": ">=20"
+    "node": ">=22"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +23,8 @@
   "dependencies": {
     "cheerio": "1.0.0-rc.12",
     "express": "^4.19.2",
-    "puppeteer": "^22.12.1"
+    "puppeteer": "^22.12.1",
+    "turndown": "^7.2.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

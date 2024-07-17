@@ -1,7 +1,7 @@
-// Assuming the necessary imports are already in place
+import fs from 'fs';
 
 // Import the function to test
-import { extractLinks, validateURL } from '../utils/parser.js';
+import { extractLinks, validateURL, removeNonContentTags } from '../utils/parser.js';
 
 const mockHtml = `#34;src&#34;: &#34;https://www.vodafone.com.au/images/icons/bundles-red.svg&#34;,
     34;: &#34;https://www.vodafone.com.au/mobile/bundle-and-save&#34;,
@@ -66,3 +66,17 @@ describe('validateURL', () => {
         expect(() => validateURL(validURL)).not.toThrow();
     });
 });
+
+describe('extractContent', () => {
+    test('remove <script>, <style> from HTML', () => {
+        // TODO: use path alias or relative path
+        const html = fs.readFileSync('./tests/html/accessories_smart-watches.html', 'utf-8');
+        const cleanedHtml = removeNonContentTags(html);
+        expect(
+            cleanedHtml.includes('</style>') ||
+            cleanedHtml.includes('</script>') ||
+            cleanedHtml.includes('</link>') ||
+            cleanedHtml.includes('<meta')
+        ).toBe(false);
+    });
+})

@@ -1,5 +1,7 @@
-import * as cheerio from 'cheerio';
+import TurndownService from 'turndown';
 import { readContentFromFile, saveStringToFile } from './file.js';
+
+const turndownService = new TurndownService()
 
 // match all text between curly braces, curly braces included
 const invalidTxtExp = new RegExp(`^<vha.*^(^</vha.*>$)$`, 'g');
@@ -11,7 +13,8 @@ const filePath = './output.txt';
 
 readContentFromFile(filePath).then(content => {
     const fileContent = content;
-    const cleanContent = fileContent.replace(vhaTagEXp, '');
+    const markdown = turndownService.turndown(fileContent)
 
-    saveStringToFile(cleanContent, 'cleaned.txt');
+    saveStringToFile(markdown, 'cleaned.txt');
 });
+
