@@ -1,5 +1,27 @@
 import TurndownService from 'turndown';
 
+function stripHashAndQuery(link) {
+    // Find the index of the first occurrence of '#' or '?'
+    const hashIndex = link.indexOf('#');
+    const queryIndex = link.indexOf('?');
+    let minIndex = -1;
+
+    if (hashIndex !== -1 && queryIndex !== -1) {
+        // Both '#' and '?' found, take the minimum index
+        minIndex = Math.min(hashIndex, queryIndex);
+    } else if (hashIndex !== -1) {
+        // Only '#' found
+        minIndex = hashIndex;
+    } else if (queryIndex !== -1) {
+        // Only '?' found
+        minIndex = queryIndex;
+    }
+
+    // If '#' or '?' found, strip off everything from there; otherwise, return the original link
+    return minIndex !== -1 ? link.substring(0, minIndex) : link;
+}
+
+
 // TODO: Unit test for isSameOrigin function
 export function isSameOrigin({ url, origin}) {
     // skip relative url
@@ -50,10 +72,11 @@ export function extractLinks({ document, origin }) {
             links.add(formatUrl(match));
         });
     }
+
+    // remove unwanted links
     links.forEach(link => {
         // TODO: use regex to filter out unwanted links
         if (
-            link.includes('?') || 
             link.includes('.svg') || 
             link.includes('.css') || 
             link.includes('.js') || 
@@ -80,9 +103,20 @@ export function extractLinks({ document, origin }) {
             return
         } 
 
+        if (link.startsWith('//')) {
+            links.delete(link);
+            return;
+        }
+
         if (link.startsWith('/')) {
             links.delete(link);
-            links.add(validatedOrigin.origin + link);
+            links.add(stripHashAndQuery(validatedOrigin.origin + link));
+            return
+        }
+
+        if (link.includes('#') || link.includes('?')) {
+            links.delete(link);
+            links.add(stripHashAndQuery(link));
         }
     });
 
@@ -101,7 +135,7 @@ export function extractContent(document) {
 
 // replace all matched part with empty string
 export function removeNonContentTags(document) {
-    // match between <link>, <meta>, <script>, <style>
+    // match between <link>, <script>, <style>, <img>, <head>
     const nonContentTagEXp = new RegExp(`(<[hls][ceit][anry][dikl][ep]?[t]?.*?(?:<\/[hls][ceit][anry][dikl][ep]?[t]?>))|(<img.*?(?:\/>))`, 'gms');
     return document.replace(nonContentTagEXp, '');
 }

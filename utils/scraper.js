@@ -24,10 +24,10 @@ export class Scraper {
         
         const html = await fetchHtmlData({ url })
         if (!html) {
-            appendFile(url, true);
+            appendFile(url, 'failed.csv');
             return;
         }
-        appendFile(url);
+        appendFile(url, './urls.csv');
 
         if (!this.origin) {
             this.origin = new URL(url).origin;
@@ -38,8 +38,8 @@ export class Scraper {
         const content = extractContent(html);
 
         // file path has to be relative path to root
-        saveStringToFile(content, `/output/${fileName}.txt`);
-        saveStringToFile(html, `/output/${fileName}.html`);
+        saveStringToFile(content, `/output/txt/${fileName}.txt`);
+        saveStringToFile(html, `/output/html/${fileName}.html`);
 
         console.log('File saved successfully')
         return html;
@@ -53,6 +53,7 @@ export class Scraper {
             throw new Error('Invalid entry url');
         }
 
+        console.log('origin', this.origin);
         const entryLinks = extractLinks({ document: entryHtml, origin: this.origin });
         this.siteLinks = this.siteLinks.union(entryLinks);
         waitList.push(...entryLinks);
@@ -92,7 +93,7 @@ export class Scraper {
 
             waitList.push(...newLinks);
 
-            // await sleep(1000);
+            await sleep(3000);
         }
         return this.siteLinks
     }

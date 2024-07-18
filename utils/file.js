@@ -2,24 +2,34 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function recursiveCreateDirForFilePath(filePath) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  
+  try {
+    const absoluteFilePath = path.join(__dirname, filePath);
+    const outputFolder = path.dirname(absoluteFilePath);
+
+    if (!fs.existsSync(outputFolder)) {
+        // If the folder does not exist, create it
+        fs.mkdirSync(outputFolder, { recursive: true });
+    }
+
+    return absoluteFilePath
+  } catch (error) {
+    console.error('Error creating the folder:', error);
+  }
+}
 
 export async function saveStringToFile(htmlContent, filePath = 'output.txt') {
-    try {
-      const outputFolder = path.join(__dirname, 'output');
-      const absoluteFilePath = path.join(__dirname, filePath);
+  const absoluteFilePath = recursiveCreateDirForFilePath(filePath);
 
-      if (!fs.existsSync(outputFolder)) {
-          // If the folder does not exist, create it
-          fs.mkdirSync(outputFolder, { recursive: true });
-      }
-
-      fs.writeFileSync(absoluteFilePath, htmlContent, 'utf-8');
-      console.log(`File has been saved to ${absoluteFilePath}`);
-    } catch (error) {
-      console.error('Error saving the file:', error);
-    }
+  try {
+    fs.writeFileSync(absoluteFilePath, htmlContent, 'utf-8');
+    console.log(`File has been saved to ${absoluteFilePath}`);
+  } catch (error) {
+    console.error('Error saving the file:', error);
+  }
 }
 
 export function readContentFromFile(filePath) {
@@ -32,17 +42,38 @@ export function readContentFromFile(filePath) {
     }
 }
 
-export function appendFile(url, fail) {
-  let csvFilePath;
-  if (fail) {
-    csvFilePath = path.join(__dirname, 'failedUrls.csv');
-  }
-   csvFilePath = path.join(__dirname, 'urls.csv');
+/**
+ * Add content to a file, reconmended for appending URLs to a CSV file.
+ * @param {string} url 
+ * @param {string} filePath 
+ */
+export function appendFile(url, filePath) {
+  const aboluteFilePath = recursiveCreateDirForFilePath(filePath);
 
-  // Append the URL to the CSV file
-  fs.appendFile(csvFilePath, `${url}\n`, (err) => {
+  fs.appendFile(aboluteFilePath, `${url}\n`, (err) => {
     if (err) {
       console.error('Error appending URL to CSV file:', err);
     }
+  });
+}
+
+function combineFiles(inputDir, outputFile) {
+  const outputFilePath = recursiveCreateDirForFilePath(inputDir);
+  fs.writeFileSync(outputFilePath, '');
+
+  fs.readdir(inputDir, (err, files) => {
+    if (err) {
+      return console.error('Failed to list directory:', err);
+    }
+
+    files.forEach(file => {
+      const filePath = path.join(inputDir, file);
+      // Check if the current path is a file and not a directory
+      if (fs.statSync(filePath).isFile()) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        // Append the content of the current file to the combined file
+        fs.appendFileSync(outputFile, content + '\n');
+      }
+    });
   });
 }
