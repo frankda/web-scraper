@@ -69,57 +69,49 @@ export function extractLinks({ document, origin }) {
     const matches = document.match(urlRegex);
     if (matches) {
         matches.forEach(match => {
+            if (
+                match.includes('.svg') || 
+                match.includes('.css') || 
+                match.includes('.js') || 
+                match.includes('.md') || 
+                match.includes('.ico') || 
+                match.includes('.zip') || 
+                match.includes('.rar') || 
+                match.includes('.jpg') || 
+                match.includes('.png') || 
+                match.includes('.pdf') || 
+                match.includes('.txt') || 
+                match.includes('.webp') ||
+                match.includes('.woff') ||
+                match.includes('.ttf') ||
+                match.includes('\\') ||
+                match.includes('tel:') ||
+                match.includes('mailto:') ||
+                match.includes('data:image') ||
+                match.includes('javascript:') ||
+                match.includes('\"') ||   // filter out "https://www.vodafone.com.au/contact/samsung-news\" target=\"_self",
+                !isSameOrigin({ url: match, origin: validatedOrigin.origin })
+            ) {
+                return
+            } 
+    
+            if (match.startsWith('//')) {
+                return;
+            }
+    
+            if (match.startsWith('/')) {
+                links.add(stripHashAndQuery(validatedOrigin.origin + match));
+                return
+            }
+    
+            if (match.includes('#') || match.includes('?')) {
+                links.add(stripHashAndQuery(match));
+                return
+            }
+
             links.add(formatUrl(match));
         });
     }
-
-    // remove unwanted links
-    links.forEach(link => {
-        // TODO: use regex to filter out unwanted links
-        if (
-            link.includes('.svg') || 
-            link.includes('.css') || 
-            link.includes('.js') || 
-            link.includes('.md') || 
-            link.includes('.ico') || 
-            link.includes('.zip') || 
-            link.includes('.rar') || 
-            link.includes('.jpg') || 
-            link.includes('.png') || 
-            link.includes('.pdf') || 
-            link.includes('.txt') || 
-            link.includes('.webp') ||
-            link.includes('.woff') ||
-            link.includes('.ttf') ||
-            link.includes('\\') ||
-            link.includes('tel:') ||
-            link.includes('mailto:') ||
-            link.includes('data:image') ||
-            link.includes('javascript:') ||
-            link.includes('\"') ||   // filter out "https://www.vodafone.com.au/contact/samsung-news\" target=\"_self",
-            !isSameOrigin({ url: link, origin: validatedOrigin.origin })
-        ) {
-            links.delete(link);
-            return
-        } 
-
-        if (link.startsWith('//')) {
-            links.delete(link);
-            return;
-        }
-
-        if (link.startsWith('/')) {
-            links.delete(link);
-            links.add(stripHashAndQuery(validatedOrigin.origin + link));
-            return
-        }
-
-        if (link.includes('#') || link.includes('?')) {
-            links.delete(link);
-            links.add(stripHashAndQuery(link));
-        }
-    });
-
     return links;
 }
 
