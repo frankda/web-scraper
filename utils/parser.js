@@ -53,6 +53,7 @@ export function extractLinks({ document, origin }) {
     links.forEach(link => {
         // TODO: use regex to filter out unwanted links
         if (
+            link.includes('?') || 
             link.includes('.svg') || 
             link.includes('.css') || 
             link.includes('.js') || 
@@ -101,6 +102,6 @@ export function extractContent(document) {
 // replace all matched part with empty string
 export function removeNonContentTags(document) {
     // match between <link>, <meta>, <script>, <style>
-    const nonContentTagEXp = new RegExp(`<[lms][ceit][nrty][aikl][ep]?[t]?.*?(?:<\/[lms][ceit][nrty][aikl][ep]?[t]?.*?>)`, 'gms');
+    const nonContentTagEXp = new RegExp(`(<[hls][ceit][anry][dikl][ep]?[t]?.*?(?:<\/[hls][ceit][anry][dikl][ep]?[t]?>))|(<img.*?(?:\/>))`, 'gms');
     return document.replace(nonContentTagEXp, '');
 }

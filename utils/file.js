@@ -31,3 +31,18 @@ export function readContentFromFile(filePath) {
       return null; // Return null in case of an error
     }
 }
+
+export function appendFile(url, fail) {
+  let csvFilePath;
+  if (fail) {
+    csvFilePath = path.join(__dirname, 'failedUrls.csv');
+  }
+   csvFilePath = path.join(__dirname, 'urls.csv');
+
+  // Append the URL to the CSV file
+  fs.appendFile(csvFilePath, `${url}\n`, (err) => {
+    if (err) {
+      console.error('Error appending URL to CSV file:', err);
+    }
+  });
+}

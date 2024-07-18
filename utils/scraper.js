@@ -1,6 +1,6 @@
 import { extractLinks, formatUrl, extractContent } from "./parser.js";
 import { fetchHtmlData } from "./requesets.js";
-import { readContentFromFile, saveStringToFile } from './file.js';
+import { readContentFromFile, saveStringToFile, appendFile } from './file.js';
 import { sleep } from './general.js';
 
 export class Scraper {
@@ -21,11 +21,13 @@ export class Scraper {
             return;
         }
         this.fetchedUrl.add(url);
-
+        
         const html = await fetchHtmlData({ url })
         if (!html) {
+            appendFile(url, true);
             return;
         }
+        appendFile(url);
 
         if (!this.origin) {
             this.origin = new URL(url).origin;
@@ -90,7 +92,7 @@ export class Scraper {
 
             waitList.push(...newLinks);
 
-            await sleep(1000);
+            // await sleep(1000);
         }
         return this.siteLinks
     }
